@@ -1,14 +1,17 @@
 /* ===== Associate Group of Accountants (AGC) ===== */
+/* Oxford heritage palette: burgundy primary, navy secondary, antique gold accent, cream background */
 :root {
-  --navy: #0d2c54;
-  --navy-dark: #081d3a;
-  --gold: #f2a900;
-  --gold-dark: #d49400;
-  --ink: #1c2733;
-  --muted: #5a6a7a;
-  --bg: #f7f9fc;
+  --navy: #7f1d1d;
+  --navy-dark: #4c1010;
+  --navy-mid: #1e3a5f;
+  --bg-alt: #f3ecdd;
+  --gold: #c9a227;
+  --gold-dark: #96781a;
+  --ink: #292524;
+  --muted: #6b6257;
+  --bg: #fbf7ef;
   --card: #ffffff;
-  --line: #e3e9f0;
+  --line: #e7dfce;
   --green: #1d7a4f;
 }
 
@@ -71,7 +74,7 @@ img { max-width: 100%; }
 
 /* ---- Hero ---- */
 .hero {
-  background: linear-gradient(140deg, var(--navy) 0%, var(--navy-dark) 60%, #123c6e 100%);
+  background: linear-gradient(140deg, var(--navy) 0%, var(--navy-dark) 60%, var(--navy-mid) 100%);
   color: #fff;
   padding: 70px 20px 60px;
   text-align: center;
@@ -130,7 +133,7 @@ img { max-width: 100%; }
 
 /* ---- Sections ---- */
 .section { padding: 56px 0; }
-.section-alt { background: #eef2f8; }
+.section-alt { background: var(--bg-alt); }
 .section h2.section-title {
   text-align: center;
   font-size: 1.7rem;
