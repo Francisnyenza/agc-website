@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://francisnyenza.github.io/agc-website/sitemap.xml

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="12" fill="#7f1d1d"/>
+  <rect x="4" y="4" width="56" height="56" rx="9" fill="none" stroke="#c9a227" stroke-width="2"/>
+  <text x="32" y="43" font-family="Georgia, 'Times New Roman', serif" font-size="24" font-weight="bold" fill="#c9a227" text-anchor="middle">AGC</text>
+</svg>
