@@ -30,6 +30,8 @@ body.intro-on { overflow: hidden; }
 .bg-logo { display: none; position: fixed; left: 50%; top: 50%; width: min(97vw, 75vh); transform: translate(-50%, -50%); opacity: .12; z-index: 0; pointer-events: none; }
 .done #scene { opacity: .12; transform: scale(1.25); }
 .done #bird, .done #fx { display: none; }
+#loadbar { position: fixed; left: 0; top: 0; height: 3px; width: 0; background: #fdad04; z-index: 3; transition: width 200ms linear, opacity 300ms; }
+.playing #loadbar, .done #loadbar { opacity: 0; }
 .nogl #scene { display: none; }
 .nogl .bg-logo { display: block; }
 .welcome { position: relative; z-index: 2; opacity: 0; visibility: hidden; transition: opacity 600ms ease-out 250ms; }
@@ -51,6 +53,7 @@ body.intro-on { overflow: hidden; }
 <canvas id="scene" aria-hidden="true"></canvas>
 <canvas id="bird" aria-hidden="true"></canvas>
 <canvas id="fx" aria-hidden="true"></canvas>
+<div id="loadbar" aria-hidden="true"></div>
 <img class="bg-logo" src="logo.webp" alt="" aria-hidden="true">
 
 <main class="splash welcome" id="main">
@@ -86,17 +89,20 @@ body.intro-on { overflow: hidden; }
   var bird = (function () {
     var cv = document.getElementById('bird'), ctx, frames = [], FLIGHT = 82, MORPH = 20, COUNT = FLIGHT + MORPH, dpr = 1;
     function setup() { ctx = cv.getContext('2d'); return !!ctx; }
-    function load() {
-      var jobs = [];
-      for (var i = 0; i < COUNT; i++) (function (i) {
-        jobs.push(new Promise(function (res, rej) {
-          var im = new Image();
-          im.onload = function () { frames[i] = im; res(); };
-          im.onerror = rej;
+    // Loads in play order, a few at a time, so the opening frames are ready first
+    function load(progress) {
+      var next = 0, done = 0;
+      return new Promise(function (resolve) {
+        function fetchOne() {
+          if (next >= COUNT) return;
+          var i = next++, im = new Image();
+          im.onload = function () { frames[i] = im; step(); };
+          im.onerror = step;
           im.src = ASSET + 'eagle-frames/' + ('00' + i).slice(-3) + '.webp';
-        }));
-      })(i);
-      return Promise.all(jobs);
+        }
+        function step() { done++; progress(done / COUNT); if (done === COUNT) resolve(); else fetchOne(); }
+        for (var k = 0; k < 6; k++) fetchOne();
+      });
     }
     function size(w, h, d) { dpr = d; cv.width = Math.round(w * d); cv.height = Math.round(h * d); }
     function frame(t, W, H, S, LH) {
@@ -108,6 +114,7 @@ body.intro-on { overflow: hidden; }
       var e = ss(1.54, 3.6, t), x = lerp(0, (.46146 - .5) * S, e), y = lerp(-.05 * H, (.43555 - .5) * LH, e);
       var i = t < T_MORPH ? Math.min(FLIGHT - 1, Math.floor(t * 24)) : FLIGHT + Math.min(MORPH - 1, Math.floor((t - T_MORPH) / (T_MORPH_END - T_MORPH) * MORPH));
       var im = frames[i];
+      for (var j = i; !im && j > 0; j--) im = frames[j - 1];
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, W, H);
       if (im) { ctx.imageSmoothingQuality = 'high'; ctx.drawImage(im, W / 2 + x - D / 2, H / 2 + y - D / 2, D, D); }
@@ -357,11 +364,21 @@ body.intro-on { overflow: hidden; }
   if (calm || !init()) { if (!gl) { doc.classList.add('nogl'); finish(); } else Promise.all(Object.keys(SRC).map(loadTex)).then(finish, finish); return; }
   document.addEventListener('pointerdown', finish);
   document.addEventListener('keydown', finish);
-  timers.push(setTimeout(finish, 8000));
-  Promise.all(Object.keys(SRC).map(loadTex).concat(birdOK ? [bird.load()] : [])).then(function () {
+  timers.push(setTimeout(finish, 12000));
+  // Starts as soon as the rest should arrive before it is needed, so slow connections still see the intro
+  var bar = document.getElementById('loadbar'), began = performance.now(), layersIn = false, part = 0, started = false;
+  function maybeStart() {
+    bar.style.width = (part * 100) + '%';
+    if (started || !layersIn || finished) return;
+    var spent = (performance.now() - began) / 1000;
+    if (birdOK && part < 1 && (part === 0 || spent / part * (1 - part) > 3.4)) return;
+    started = true;
+    doc.classList.add('playing');
     timers.forEach(clearTimeout); timers = [];
     play();
-  }, finish);
+  }
+  if (birdOK) bird.load(function (p) { part = p; maybeStart(); });
+  Promise.all(Object.keys(SRC).map(loadTex)).then(function () { layersIn = true; maybeStart(); }, finish);
 })();
 </script>
 </body>
