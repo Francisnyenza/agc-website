@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://francisnyenza.github.io/agc-website/sitemap.xml
+Sitemap: https://www.agcgroup.co.tz/sitemap.xml
